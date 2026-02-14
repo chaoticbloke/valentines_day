@@ -167,6 +167,7 @@
 <script>
 const music = document.getElementById("bgMusic");
 const musicToggle = document.getElementById("musicToggle");
+
 music.volume = 0.4;
 
 function startMusic() {
@@ -175,8 +176,28 @@ function startMusic() {
   }).catch(() => {});
 }
 
-document.addEventListener("click", startMusic, { once: true });
+// 1️⃣ Try autoplay on load
+window.addEventListener("load", () => {
+  const playPromise = music.play();
 
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      musicToggle.textContent = "🎵 Music Playing";
+    }).catch(() => {
+      // 2️⃣ If blocked, start on first interaction
+      const unlockAudio = () => {
+        startMusic();
+        document.removeEventListener("click", unlockAudio);
+        document.removeEventListener("touchstart", unlockAudio);
+      };
+
+      document.addEventListener("click", unlockAudio);
+      document.addEventListener("touchstart", unlockAudio);
+    });
+  }
+});
+
+// 3️⃣ Keep toggle working
 musicToggle.addEventListener("click", (e) => {
   e.stopPropagation();
   if (music.paused) {
@@ -186,6 +207,7 @@ musicToggle.addEventListener("click", (e) => {
     musicToggle.textContent = "🔇 Music Off";
   }
 });
+
 
 const noBtn = document.getElementById("no");
 const yesBtn = document.getElementById("yes");
