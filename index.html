@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Be My Valentine 💘</title>
 
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
-
-  <!-- Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -27,6 +24,40 @@
       position: relative;
     }
 
+    @keyframes bgMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Intro Overlay */
+    #introOverlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg,#ff9a9e,#fbc2eb);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 9999;
+      color: white;
+      cursor: pointer;
+      transition: opacity 0.6s ease;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #introOverlay h1 {
+      font-family: "Playfair Display", serif;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    #introOverlay p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
     .music-toggle {
       position: absolute;
       top: 15px;
@@ -38,12 +69,6 @@
       cursor: pointer;
       box-shadow: 0 5px 15px rgba(0,0,0,0.15);
       user-select: none;
-    }
-
-    @keyframes bgMove {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
     }
 
     .card {
@@ -111,25 +136,8 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     }
 
-    button:active { transform: scale(0.94); }
-
-    #yes {
-      left: 12%;
-      background: linear-gradient(135deg, #ff4d6d, #ff758f);
-      color: #fff;
-      box-shadow: 0 15px 35px rgba(255,77,109,0.55);
-    }
-
-    #yes:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 20px 40px rgba(255,77,109,0.7);
-    }
-
-    #no {
-      left: 55%;
-      background: rgba(255,255,255,0.9);
-      color: #777;
-    }
+    #yes { left: 12%; background: linear-gradient(135deg, #ff4d6d, #ff758f); color: #fff; }
+    #no { left: 55%; background: rgba(255,255,255,0.9); color: #777; }
 
     .hint {
       margin-top: 28px;
@@ -142,9 +150,14 @@
 
 <body>
 
-<div class="music-toggle" id="musicToggle">🎵 Tap for music</div>
+<!-- Intro Overlay -->
+<div id="introOverlay">
+  <h1>Enter our Lover era 💖</h1>
+  <p>Tap anywhere to begin</p>
+</div>
 
-<!-- WORKING AUDIO SOURCE -->
+<div class="music-toggle" id="musicToggle">🎵 Music Off</div>
+
 <audio id="bgMusic" preload="auto" loop>
   <source src="lover.mp3" type="audio/mp3">
 </audio>
@@ -166,48 +179,28 @@
 
 <script>
 const music = document.getElementById("bgMusic");
+const intro = document.getElementById("introOverlay");
 const musicToggle = document.getElementById("musicToggle");
 
-music.volume = 0.4;
+music.volume = 0.5;
 
-function startMusic() {
-  music.play().then(() => {
-    musicToggle.textContent = "🎵 Music Playing";
-  }).catch(() => {});
-}
-
-// 1️⃣ Try autoplay on load
-window.addEventListener("load", () => {
-  const playPromise = music.play();
-
-  if (playPromise !== undefined) {
-    playPromise.then(() => {
-      musicToggle.textContent = "🎵 Music Playing";
-    }).catch(() => {
-      // 2️⃣ If blocked, start on first interaction
-      const unlockAudio = () => {
-        startMusic();
-        document.removeEventListener("click", unlockAudio);
-        document.removeEventListener("touchstart", unlockAudio);
-      };
-
-      document.addEventListener("click", unlockAudio);
-      document.addEventListener("touchstart", unlockAudio);
-    });
-  }
+intro.addEventListener("click", () => {
+  music.play();
+  musicToggle.textContent = "🎵 Music Playing";
+  intro.style.opacity = "0";
+  setTimeout(() => intro.remove(), 600);
 });
 
-// 3️⃣ Keep toggle working
 musicToggle.addEventListener("click", (e) => {
   e.stopPropagation();
   if (music.paused) {
-    startMusic();
+    music.play();
+    musicToggle.textContent = "🎵 Music Playing";
   } else {
     music.pause();
     musicToggle.textContent = "🔇 Music Off";
   }
 });
-
 
 const noBtn = document.getElementById("no");
 const yesBtn = document.getElementById("yes");
@@ -231,12 +224,7 @@ noBtn.addEventListener("mouseenter", () => {
 
 yesBtn.addEventListener("click", () => {
   yesSound.play();
-
-  confetti({
-    particleCount: 260,
-    spread: 120,
-    origin: { y: 0.65 }
-  });
+  confetti({ particleCount: 260, spread: 120, origin: { y: 0.65 } });
 
   setTimeout(() => {
     alert("YAY 💕 I can’t wait for Valentine’s Day with you!");
